@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: God | Tumayun's Blog]]></title>
+  <link href="http://tumayun.com/categories/god/atom.xml" rel="self"/>
+  <link href="http://tumayun.com/"/>
+  <updated>2014-08-24T22:23:31+08:00</updated>
+  <id>http://tumayun.com/</id>
+  <author>
+    <name><![CDATA[tumayun]]></name>
+    <email><![CDATA[tumayun.2010@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Resque 重启命令]]></title>
+    <link href="http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling/"/>
+    <updated>2013-01-25T00:46:00+08:00</updated>
+    <id>http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling</id>
+    <content type="html"><![CDATA[<p>  &nbsp;&nbsp;现在 Resque 都应该加上 <a href="http://godrb.com" title="Ruby process monito">god</a> 监控，不然 Resque worker 进程很容易就死掉！
+  <a href="http://godrb.com" title="Ruby process monito">god</a> 在 worker 进程挂掉后会自动重启，
+  如果项目更新，需要手动重启所有的 worker，可以 kill 掉所有的 worker 进程(千万别 kill -9，最好是 kill -s QUIT，这样会在当前 job 完成后再退出)，
+  方法如下：
+<code>ruby
+ps -e -o pid,command | grep [r]esque-[0-9] | cut -d ' ' -f 1 | xargs  kill -s QUIT
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>

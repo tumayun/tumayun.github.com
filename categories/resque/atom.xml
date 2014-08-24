@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Resque | Tumayun's Blog]]></title>
+  <link href="http://tumayun.com/categories/resque/atom.xml" rel="self"/>
+  <link href="http://tumayun.com/"/>
+  <updated>2014-08-24T22:23:31+08:00</updated>
+  <id>http://tumayun.com/</id>
+  <author>
+    <name><![CDATA[tumayun]]></name>
+    <email><![CDATA[tumayun.2010@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Resque 同步执行]]></title>
+    <link href="http://tumayun.com/2013-05-29/resque-tong-bu-zhi-xing/"/>
+    <updated>2013-05-29T01:16:00+08:00</updated>
+    <id>http://tumayun.com/2013-05-29/resque-tong-bu-zhi-xing</id>
+    <content type="html"><![CDATA[<h3>背景</h3>
+
+<p>测试的时候,有个方法里面调用了<code>Resque.enqueue</code>,我觉得不好测试.
+可能有人会说只需要测试是否调用了<code>Resque.enqueue</code>,或者只需要测试<code>redis</code>里面是否有这个队列.
+但是我觉得最好还是要测试到后台任务的执行结果,因为后台任务的最终结果可能就是这个方法的关键之处,是这个方法的主体.所以最好还是能去测试后台任务的结果(当然,视代价而定)!~</p>
+
+<p>好了,回到正题.怎么去测试<code>Resque</code>任务的执行结果呢?额,开着后台<code>worker</code>?然后在测试代码里面<code>sleep 10</code>等待后台执行?我擦,太二了!</p>
+
+<p>翻看了下<a href="https://github.com/resque/resque">Resque</a>的源码,发现了个好东西<a href="https://github.com/resque/resque/blob/master/lib/resque.rb#L119">inline</a>.</p>
+
+<pre>
+# If 'inline' is true Resque will call #perform method inline
+# without queuing it into Redis and without any Resque callbacks.
+# The 'inline' is false Resque jobs will be put in queue regularly.
+</pre>
+
+
+<p>大意就是</p>
+
+<pre>
+如果 inline 为 true, Resque 任务会直接执行不需要放到 redis 队列中，并且不执行任何 callbacks。 inline 是 false, Resque
+任务将放在 redis 队列里面等待执行。
+</pre>
+
+
+<p>恩,nice!这个就是我想要的,同步执行!</p>
+
+<h3>源码分析 inline</h3>
+
+<p>首先要看压队列的方法 <a href="https://github.com/resque/resque/blob/master/lib/resque.rb#L245">Resque#enqueue</a>.</p>
+
+<pre><code class="ruby">def enqueue(klass, *args)
+  enqueue_to(queue_from_class(klass), klass, *args)
+end
+</code></pre>
+
+<p>这个方法是将<code>job</code>压入<code>redis</code>队列.再看看 <a href="https://github.com/resque/resque/blob/master/lib/resque.rb#L336">queue_from_class</a>方法.</p>
+
+<pre><code class="ruby">def queue_from_class(klass)
+  if klass.instance_variable_defined?(:@queue)
+    klass.instance_variable_get(:@queue)
+  else
+    (klass.respond_to?(:queue) and klass.queue)
+  end
+end
+</code></pre>
+
+<p>这个方法是用来获取<code>job</code>对应的队列名的.</p>
+
+<p>再回到<code>enqueue</code>方法,看看 <a href="https://github.com/resque/resque/blob/master/lib/resque.rb#L258">enqueue_to</a> 方法.</p>
+
+<pre><code class="ruby">def enqueue_to(queue, klass, *args)
+  validate(klass, queue)
+  # Perform before_enqueue hooks. Don't perform enqueue if any hook returns false
+  before_hooks = Plugin.before_enqueue_hooks(klass).collect do |hook|
+    klass.send(hook, *args)
+  end
+  return nil if before_hooks.any? { |result| result == false }
+
+  Job.create(queue, klass, *args)
+
+  Plugin.after_enqueue_hooks(klass).each do |hook|
+    klass.send(hook, *args)
+  end
+
+  return true
+end
+</code></pre>
+
+<p>这个方法是去验证<code>job</code>,并且执行<code>hooks</code>,创建<code>job</code>.
+先看看 <a href="https://github.com/resque/resque/blob/master/lib/resque.rb#L349">validate</a>.</p>
+
+<pre><code class="ruby">def validate(klass, queue = nil)
+  queue ||= queue_from_class(klass)
+
+  unless queue
+    raise NoQueueError.new("Jobs must be placed onto a queue.")
+  end
+
+  if klass.to_s.empty?
+    raise NoClassError.new("Jobs must be given a class.")
+  end
+end
+</code></pre>
+
+<p>这个方法是去校验是否有队列名以及<code>job class</code>.</p>
+
+<p>再看看 <a href="https://github.com/resque/resque/blob/master/lib/resque/plugin.rb#L64">Plugin.before_enqueue_hooks</a>.</p>
+
+<pre><code class="ruby"># Given an object, returns a list `before_enqueue` hook names.
+def before_enqueue_hooks(job)
+  get_hook_names(job, 'before_enqueue')
+end  
+return nil if before_hooks.any? { |result| result == false }
+</code></pre>
+
+<p>这个方法是获取<code>before_enqueue hook</code>的列表.然后</p>
+
+<pre><code class="ruby">before_hooks = Plugin.before_enqueue_hooks(klass).collect do |hook|
+  klass.send(hook, *args)
+end
+</code></pre>
+
+<p>这段代码会去执行所有的<code>before_enqueue hook</code>,并且校验所有<code>before_enqueue hook</code>执行结果,如果有为<code>false</code>,则直接<code>return</code>,否则创建<code>job</code>,并且执行所有的<code>after_enqueue hook</code>.</p>
+
+<p>我们再仔细看看 <a href="https://github.com/resque/resque/blob/master/lib/resque/job.rb#L40">Job.create</a>.</p>
+
+<pre><code class="ruby"># Creates a job by placing it on a queue. Expects a string queue
+# name, a string class name, and an optional array of arguments to
+# pass to the class' `perform` method.
+#
+# Raises an exception if no queue or class is given.
+def self.create(queue, klass, *args)
+  coder = Resque.coderhttps://github.com/resque/resque/blob/master/lib/resque/json_coder.rb
+  Resque.validate(klass, queue)
+
+  if Resque.inline?
+    # Instantiating a Resque::Job and calling perform on it so callbacks run
+    # decode(encode(args)) to ensure that args are normalized in the same
+    # manner as a non-inline job
+    payload = {'class' =&gt; klass, 'args' =&gt; coder.decode(coder.encode(args))}
+
+    new(:inline, payload).perform
+  else
+    Resque.push(queue, 'class' =&gt; klass.to_s, 'args' =&gt; args)
+  end
+end
+</code></pre>
+
+<p>关键的地方来了!!!  <br/>
+额,先稍等,一步一步来.</p>
+
+<h5>coder</h5>
+
+<pre><code class="ruby">#https://github.com/resque/resque/blob/master/lib/resque.rb#L84
+# Encapsulation of encode/decode. Overwrite this to use it across Resque.
+# This defaults to JSON for backwards compatibility.
+def coder
+  @coder ||= JsonCoder.new
+end
+</code></pre>
+
+<p>不难看出,是用来解析队列参数<code>args</code>的,这里默认是 <a href="https://github.com/resque/resque/blob/master/lib/resque/json_coder.rb">JsonCoder</a>,
+用<code>JSON</code>来解析参数.</p>
+
+<h5>Resque.validate</h5>
+
+<p>前文已经讲过,用来校验队列名以及<code>job class</code>.</p>
+
+<h5>Resque.push</h5>
+
+<p>如果非<code>inline</code>,将<code>job</code>压入队列,等待异步执行.</p>
+
+<h5>perform</h5>
+
+<p>如果<code>inline</code>,直接执行<code>job</code>.可以具体看看是怎么执行的.  <br/>
+先获取<code>job</code>参数,再用参数<code>new</code>一个<code>job</code>出来,然后执行<code>perform</code>方法.关键就在<code>perform</code>方法,这个方法就是去真正执行<code>job</code>了.  <br/>
+下面再来具体看看到底是怎么<code>perform</code>的.</p>
+
+<pre><code class="ruby"># https://github.com/resque/resque/blob/master/lib/resque/job.rb#L134
+# Attempts to perform the work represented by this job instance.
+# Calls #perform on the class given in the payload with the
+# arguments given in the payload.
+def perform
+  begin
+    hooks = {
+      :before =&gt; before_hooks,
+      :around =&gt; around_hooks,
+      :after =&gt; after_hooks
+    }
+    JobPerformer.new.perform(payload_class, args, hooks)
+    # If an exception occurs during the job execution, look for an
+    # on_failure hook then re-raise.
+  rescue Object =&gt; e
+    run_failure_hooks(e)
+    raise e
+  end
+end
+
+#  https://github.com/resque/resque/blob/master/lib/resque/job_performer.rb#L12
+# This is the actual performer for a single unit of work.  It's called
+# by Resque::Job#perform
+# Args:
+#   palyoad_class: The class to call ::perform on
+#   args: An array of args to pass to the payload_class::perform
+#   hook: A hash with keys :before, :after and :around, all arrays of
+#         methods to call on the payload class with args
+def perform(payload_class, args, hooks)
+  @job      = payload_class
+  @job_args = args || []
+  @hooks    = hooks
+
+  # before_hooks can raise a Resque::DontPerform exception
+  # in which case we exit this method, returning false (because
+  # the job was never performed)
+  return false unless call_before_hooks
+  execute_job
+  call_hooks(:after)
+
+  performed?
+end
+
+# https://github.com/resque/resque/blob/master/lib/resque/job_performer.rb#L28
+def call_before_hooks
+  begin
+    call_hooks(:before)
+    true
+  rescue Resque::DontPerform
+    false
+  end
+end
+
+# https://github.com/resque/resque/blob/master/lib/resque/job_performer.rb#L37
+def execute_job
+  # Execute the job. Do it in an around_perform hook if available.
+  if hooks[:around].empty?
+    perform_job
+  else
+    call_around_hooks
+  end
+end
+
+# https://github.com/resque/resque/blob/master/lib/resque/job_performer.rb#L67
+def perform_job
+  result = job.perform(*job_args)
+  job_performed
+  result
+end
+</code></pre>
+
+<p>由上述代码可以看出,其实真正执行的方法还是<code>job class</code>的<code>perform</code>方法,并且会去执行诸如<code>before_perform</code> <code>around_perform</code> <code>after_perform</code>等为前缀的<code>job class</code>方法.
+整个<code>Resque</code>同步执行的过程就是这样!</p>
+
+<h3>但是</h3>
+
+<p>看完代码之后,我直接提了个<a href="https://github.com/resque/resque/issues/1026">issue</a>,
+不知道是不是没开发完还是怎么回事!<code>inline</code>的描述和真实的行为竟然不一样!!!<code>inline</code>为<code>true</code>,还是会去执行<code>callbacks</code>!</p>
+
+<h3>最后</h3>
+
+<p>看了这篇文章后,脑子里应该能有一个大概的流程图,知道<code>Resque</code>大概的执行过程,这样我的目标就算达到了.后面我会再写一篇<em>Resque 异步执行</em>的文章,其实都是一样的,这个留到下次文章再分析.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Resque 数据库链接错误]]></title>
+    <link href="http://tumayun.com/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/"/>
+    <updated>2013-01-25T14:07:00+08:00</updated>
+    <id>http://tumayun.com/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu</id>
+    <content type="html"><![CDATA[<p>  &nbsp;&nbsp;最近项目用的 <a href="https://github.com/defunkt/resque," title="Resque Github">Resque</a> 老是会有一些莫名其妙的问题，非常头疼！
+<code>ruby
+Mysql::Error: MySQL server has gone away: SHOW FIELDS FROM `deals`
+</code>
+  实在是没办法了，然后仔细的去阅读了下 <a href="https://github.com/defunkt/resque," title="Resque Github">Resque</a> 的 <a href="https://github.com/defunkt/resque/wiki," title="Resque wiki">wiki</a>，有种恍然大悟的感觉。
+  原来我遇到的问题大家都遇到过，并且给出了解决方案，就拿 Resque 数据库链接错误来说，<a href="https://github.com/defunkt/resque#mysqlerror-mysql-server-has-gone-away," title="Resque Github">Resque</a> 原作者已经有了推荐的解决方案，原文如下：<br/>
+  &nbsp;&nbsp;If your workers remain idle for too long they may lose their MySQL connection.
+  If that happens we recommend using <a href="https://gist.github.com/238999">this Gist</a>.<br/>
+  &nbsp;&nbsp;然后我在项目 <code>config/initializers</code> 目录中的 <code>resque.rb</code> 文件中加入代码：
+<code>ruby
+Resque.after_fork do |job|
+  ActiveRecord::Base.connection_handler.verify_active_connections!
+end
+</code>
+问题就这样解决了！但是，引入一个 <code>Gem</code>，我连文档都没有仔细阅读，匆匆使用了事，现在想想真的很惭愧！
+以后引入 <code>Gem</code> 最起码要将文档通读一边，有能力更应该通读源码！<br/>
+谨记！</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Resque 重启命令]]></title>
+    <link href="http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling/"/>
+    <updated>2013-01-25T00:46:00+08:00</updated>
+    <id>http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling</id>
+    <content type="html"><![CDATA[<p>  &nbsp;&nbsp;现在 Resque 都应该加上 <a href="http://godrb.com" title="Ruby process monito">god</a> 监控，不然 Resque worker 进程很容易就死掉！
+  <a href="http://godrb.com" title="Ruby process monito">god</a> 在 worker 进程挂掉后会自动重启，
+  如果项目更新，需要手动重启所有的 worker，可以 kill 掉所有的 worker 进程(千万别 kill -9，最好是 kill -s QUIT，这样会在当前 job 完成后再退出)，
+  方法如下：
+<code>ruby
+ps -e -o pid,command | grep [r]esque-[0-9] | cut -d ' ' -f 1 | xargs  kill -s QUIT
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>

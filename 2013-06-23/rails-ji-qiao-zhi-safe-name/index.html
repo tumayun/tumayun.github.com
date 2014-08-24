@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Rails 技巧之 Safe Name - Tumayun's Blog</title>
+  <meta name="author" content="tumayun">
+
+  
+  <meta name="description" content="当使用元编程动态生成代码时,可能会有一些不符合命名规范的名称,那么就可以用到下面的技巧,姑且称之为safe name. 以下出自 Rails 源码 define_method_attribute 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Tumayun's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Fjalla+One" rel="stylesheet" type="text/css">
+<!--- MathJax Configuration -->
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-39277551-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Tumayun's Blog</a></h1>
+  
+    <h2>Blog.new('tumayun').render</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+  
+  
+  
+  
+  
+  
+<ul class="subscription">
+  <li><a href="https://github.com/tumayun" rel="subscribe-github" title="@tumayun on GitHub">GitHub</a></li>
+</ul>
+  
+  
+  
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:tumayun.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      
+        <h1 class="entry-title">Rails 技巧之 Safe Name</h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2013-06-23T23:51:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2013</span></span> <span class='time'>11:51 pm</span></time>
+        
+           | <a href="#disqus_thread"
+             data-disqus-identifier="http://tumayun.com">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>当使用元编程动态生成代码时,可能会有一些不符合命名规范的名称,那么就可以用到下面的技巧,姑且称之为<code>safe name</code>.</p>
+
+<p>以下出自 Rails 源码 <a href="https://github.com/rails/rails/blob/master/activerecord/lib/active_record/attribute_methods/read.rb#L50">define_method_attribute</a></p>
+
+<div class='bogus-wrapper'><notextile><figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># We want to generate the methods via module_eval rather than</span>
+</span><span class='line'><span class="c1"># define_method, because define_method is slower on dispatch and</span>
+</span><span class='line'><span class="c1"># uses more memory (because it creates a closure).</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># But sometimes the database might return columns with</span>
+</span><span class='line'><span class="c1"># characters that are not allowed in normal method names (like</span>
+</span><span class='line'><span class="c1"># &#39;my_column(omg)&#39;. So to work around this we first define with</span>
+</span><span class='line'><span class="c1"># the __temp__ identifier, and then use alias method to rename</span>
+</span><span class='line'><span class="c1"># it to what we want.</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># We are also defining a constant to hold the frozen string of</span>
+</span><span class='line'><span class="c1"># the attribute name. Using a constant means that we do not have</span>
+</span><span class='line'><span class="c1"># to allocate an object on each call to the attribute method.</span>
+</span><span class='line'><span class="c1"># Making it frozen means that it doesn&#39;t get duped when used to</span>
+</span><span class='line'><span class="c1"># key the @attributes_cache in read_attribute.</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">define_method_attribute</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">safe_name</span> <span class="o">=</span> <span class="nb">name</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;h*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
+</span><span class='line'>  <span class="n">generated_attribute_methods</span><span class="o">.</span><span class="n">module_eval</span> <span class="o">&lt;&lt;-</span><span class="no">STR</span><span class="p">,</span> <span class="bp">__FILE__</span><span class="p">,</span> <span class="bp">__LINE__</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'><span class="sh">  def __temp__#{safe_name}</span>
+</span><span class='line'><span class="sh">  read_attribute(AttrNames::ATTR_#{safe_name}) { |n| missing_attribute(n, caller) }</span>
+</span><span class='line'><span class="sh">  end</span>
+</span><span class='line'><span class="sh">  alias_method #{name.inspect}, :__temp__#{safe_name}</span>
+</span><span class='line'><span class="sh">  undef_method :__temp__#{safe_name}</span>
+</span><span class='line'><span class="no">  STR</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+
+<p><code>safe name</code>技巧的原理就是构造符合命名规范的名称(通过一些算法,像unpack,hash都可以),
+  像这里的话是通过<code>unpack('h*')</code>生成一个字串<code>safe_name</code>.</p>
+
+<p>  这个技巧真心很赞!!!</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+
+  
+
+
+  <span class="byline author vcard">Authored by <span class="fn">
+  
+    <a href="https://plus.google.com/104692249916246692945" rel="author">tumayun</a>
+  
+  </span></span>
+
+
+      
+
+
+
+
+<time class='entry-date' datetime='2013-06-23T23:51:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2013</span></span> <span class='time'>11:51 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/categories/rails/'>rails</a>, <a class='category' href='/categories/ruby/'>ruby</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/" data-via="tumayun" data-counturl="http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/" >Tweet</a>
+  
+  
+  
+    <div class="fb-like" data-send="true" data-width="450" data-show-faces="false"></div>
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/2013-05-29/resque-tong-bu-zhi-xing/" title="Previous Post: Resque 同步执行">&laquo; Resque 同步执行</a>
+      
+      
+        <a class="basic-alignment right" href="/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/" title="Next Post: Rails 4 源码阅读之timestamps">Rails 4 源码阅读之timestamps &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - tumayun
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'tumayun';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/';
+        var disqus_url = 'http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) {return;}
+  js = d.createElement(s); js.id = id; js.async = true;
+  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,124 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
 
-<!DOCTYPE html>
-<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
-<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
-<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
-<head>
-  <meta charset="utf-8">
-  <title>Tumayun's Blog</title>
-  <meta name="author" content="tumayun">
-
-  
-  <meta name="description" content="最近开始看 Rails 4 的源码,打算写一系列的 Rails 4 源码阅读的文章,这是第一篇. 我是因为想知道 Rails 4 里面的 timestamps 是在什么时候赋值或者更新的,然后我翻看了下 Rails 4 的 ActiveRecord 代码. 在https://github.com/ &hellip;">
-  
-
-  <!-- http://t.co/dKP3o1e -->
-  <meta name="HandheldFriendly" content="True">
-  <meta name="MobileOptimized" content="320">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><![CDATA[Tumayun's Blog]]></title>
+  <link href="http://tumayun.com/atom.xml" rel="self"/>
+  <link href="http://tumayun.com/"/>
+  <updated>2014-08-24T22:23:31+08:00</updated>
+  <id>http://tumayun.com/</id>
+  <author>
+    <name><![CDATA[tumayun]]></name>
+    <email><![CDATA[tumayun.2010@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
 
   
-  <link rel="canonical" href="http://tumayun.com">
-  <link href="/favicon.png" rel="icon">
-  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="Tumayun's Blog" type="application/atom+xml">
-  <script src="/javascripts/modernizr-2.0.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
-  <script src="/javascripts/octopress.js" type="text/javascript"></script>
-  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
-<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
-<link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
-<link href="//fonts.googleapis.com/css?family=Fjalla+One" rel="stylesheet" type="text/css">
-<!--- MathJax Configuration -->
-<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-  
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-39277551-1']);
-    _gaq.push(['_trackPageview']);
-
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
-  </script>
-
-
-</head>
-
-<body   class="collapse-sidebar sidebar-footer" >
-  <header role="banner"><hgroup>
-  <h1><a href="/">Tumayun's Blog</a></h1>
-  
-    <h2>Blog.new('tumayun').render</h2>
-  
-</hgroup>
-
-</header>
-  <nav role="navigation"><ul class="subscription" data-subscription="rss">
-  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
-  
-</ul>
-  
-  
-  
-  
-  
-  
-  
-<ul class="subscription">
-  <li><a href="https://github.com/tumayun" rel="subscribe-github" title="@tumayun on GitHub">GitHub</a></li>
-</ul>
-  
-  
-  
-  
-<form action="http://google.com/search" method="get">
-  <fieldset role="search">
-    <input type="hidden" name="q" value="site:tumayun.com" />
-    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
-  </fieldset>
-</form>
-  
-<ul class="main-navigation">
-  <li><a href="/">Blog</a></li>
-  <li><a href="/blog/archives">Archives</a></li>
-  <li><a href="/about">About</a></li>
-</ul>
-
-</nav>
-  <div id="main">
-    <div id="content">
-      <div class="blog-index">
-  
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/">Rails 4 源码阅读之timestamps</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-06-29T19:20:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>7:20 pm</span></time>
-        
-           | <a href="/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近开始看 Rails 4 的源码,打算写一系列的 Rails 4 源码阅读的文章,这是第一篇.</p>
+  <entry>
+    <title type="html"><![CDATA[Rails 4 源码阅读之timestamps]]></title>
+    <link href="http://tumayun.com/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/"/>
+    <updated>2013-06-29T19:20:00+08:00</updated>
+    <id>http://tumayun.com/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at</id>
+    <content type="html"><![CDATA[<p>最近开始看 Rails 4 的源码,打算写一系列的 Rails 4 源码阅读的文章,这是第一篇.</p>
 
 <p>我是因为想知道 Rails 4 里面的 timestamps 是在什么时候赋值或者更新的,然后我翻看了下 Rails 4 的 ActiveRecord 代码.</p>
 
@@ -421,38 +321,15 @@
 <p>这样就能知道调用链的情况了.当然还可以去<code>debugger</code>.</p>
 
 <p>恩,<code>save</code>就是这样!<code>timestamps</code>又明白了,太棒了~!</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-06-23/rails-ji-qiao-zhi-safe-name/">Rails 技巧之 Safe Name</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-06-23T23:51:00+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2013</span></span> <span class='time'>11:51 pm</span></time>
-        
-           | <a href="/2013-06-23/rails-ji-qiao-zhi-safe-name/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>当使用元编程动态生成代码时,可能会有一些不符合命名规范的名称,那么就可以用到下面的技巧,姑且称之为<code>safe name</code>.</p>
+  <entry>
+    <title type="html"><![CDATA[Rails 技巧之 Safe Name]]></title>
+    <link href="http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/"/>
+    <updated>2013-06-23T23:51:00+08:00</updated>
+    <id>http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name</id>
+    <content type="html"><![CDATA[<p>当使用元编程动态生成代码时,可能会有一些不符合命名规范的名称,那么就可以用到下面的技巧,姑且称之为<code>safe name</code>.</p>
 
 <p>以下出自 Rails 源码 <a href="https://github.com/rails/rails/blob/master/activerecord/lib/active_record/attribute_methods/read.rb#L50">define_method_attribute</a></p>
 
@@ -513,38 +390,15 @@
   像这里的话是通过<code>unpack('h*')</code>生成一个字串<code>safe_name</code>.</p>
 
 <p>  这个技巧真心很赞!!!</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-05-29/resque-tong-bu-zhi-xing/">Resque 同步执行</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-05-29T01:16:00+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:16 am</span></time>
-        
-           | <a href="/2013-05-29/resque-tong-bu-zhi-xing/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-05-29/resque-tong-bu-zhi-xing/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>背景</h3>
+  <entry>
+    <title type="html"><![CDATA[Resque 同步执行]]></title>
+    <link href="http://tumayun.com/2013-05-29/resque-tong-bu-zhi-xing/"/>
+    <updated>2013-05-29T01:16:00+08:00</updated>
+    <id>http://tumayun.com/2013-05-29/resque-tong-bu-zhi-xing</id>
+    <content type="html"><![CDATA[<h3>背景</h3>
 
 <p>测试的时候,有个方法里面调用了<code>Resque.enqueue</code>,我觉得不好测试.
 可能有人会说只需要测试是否调用了<code>Resque.enqueue</code>,或者只需要测试<code>redis</code>里面是否有这个队列.
@@ -934,38 +788,15 @@
 <h3>最后</h3>
 
 <p>看了这篇文章后,脑子里应该能有一个大概的流程图,知道<code>Resque</code>大概的执行过程,这样我的目标就算达到了.后面我会再写一篇<em>Resque 异步执行</em>的文章,其实都是一样的,这个留到下次文章再分析.</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-03-13/let-let-subject-subject-de-qu-bie/">Let Let! Subject Subject! 的区别</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-03-13T13:56:00+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>13</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>1:56 pm</span></time>
-        
-           | <a href="/2013-03-13/let-let-subject-subject-de-qu-bie/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-03-13/let-let-subject-subject-de-qu-bie/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>当我遇到不明白的事物的时候，我会先看表象，了解到表象后，再深入了解其内部。不能说这种方法好，但是对我来说还是挺有效的（年轻的coder）。当然，最好还是直接深入内部去了解，这样更省事省时。<br/>
+  <entry>
+    <title type="html"><![CDATA[Let Let! Subject Subject! 的区别]]></title>
+    <link href="http://tumayun.com/2013-03-13/let-let-subject-subject-de-qu-bie/"/>
+    <updated>2013-03-13T13:56:00+08:00</updated>
+    <id>http://tumayun.com/2013-03-13/let-let-subject-subject-de-qu-bie</id>
+    <content type="html"><![CDATA[<p>当我遇到不明白的事物的时候，我会先看表象，了解到表象后，再深入了解其内部。不能说这种方法好，但是对我来说还是挺有效的（年轻的coder）。当然，最好还是直接深入内部去了解，这样更省事省时。<br/>
 到正题，<a href="https://www.relishapp.com/rspec/rspec-core/v/2-13/docs/helper-methods/let-and-let!" title="let-and-let!">let 与 let的说明</a>如下：</p>
 
 <pre><code>Use let to define a memoized helper method. The value will be cached
@@ -1126,38 +957,15 @@ invocation before each example.
 <h3>总结</h3>
 
 <p>其实什么时候用<code>let</code> <code>subject</code>，这个可以根据字面意思来，如果是测试主题，并且需要多次调用，就可有写成一个<code>subject</code>。而非测试主题，又需要多次调用，则可以用<code>let</code>！</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-02-22/ruby-han-shu-shi-bian-cheng-by-arnau-sanchez/">Ruby 函数式编程 by Arnau Sanchez</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-02-22T14:12:00+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2013</span></span> <span class='time'>2:12 pm</span></time>
-        
-           | <a href="/2013-02-22/ruby-han-shu-shi-bian-cheng-by-arnau-sanchez/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-02-22/ruby-han-shu-shi-bian-cheng-by-arnau-sanchez/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>本文档翻译自 Arnau Sanchez (tokland)所编译的这份文档 <a href="http://code.google.com/p/tokland/wiki/RubyFunctionalProgramming">RubyFunctionalProgramming</a>。</p>
+  <entry>
+    <title type="html"><![CDATA[Ruby 函数式编程 by Arnau Sanchez]]></title>
+    <link href="http://tumayun.com/2013-02-22/ruby-han-shu-shi-bian-cheng-by-arnau-sanchez/"/>
+    <updated>2013-02-22T14:12:00+08:00</updated>
+    <id>http://tumayun.com/2013-02-22/ruby-han-shu-shi-bian-cheng-by-arnau-sanchez</id>
+    <content type="html"><![CDATA[<p>本文档翻译自 Arnau Sanchez (tokland)所编译的这份文档 <a href="http://code.google.com/p/tokland/wiki/RubyFunctionalProgramming">RubyFunctionalProgramming</a>。</p>
 
 <p>同时也有<a href="http://www.h6.dion.ne.jp/~machan/misc/FPwithRuby.html">日文版本</a>。</p>
 
@@ -1736,38 +1544,15 @@ n &lt; 1 ? acc : factorial_tco(n-1, n*acc)
 <p>This document is licensed under the CC-By 3.0 License, which encourages you to share these documents. See <a href="http://creativecommons.org/licenses/by/3.0/">http://creativecommons.org/licenses/by/3.0/</a> for more details.</p>
 
 <p><img alt="CC-By 3.0 License http://creativecommons.org/licenses/by/3.0/" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" /></p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/">Resque 数据库链接错误</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-01-25T14:07:00+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>2:07 pm</span></time>
-        
-           | <a href="/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>  &nbsp;&nbsp;最近项目用的 <a href="https://github.com/defunkt/resque," title="Resque Github">Resque</a> 老是会有一些莫名其妙的问题，非常头疼！</p>
+  <entry>
+    <title type="html"><![CDATA[Resque 数据库链接错误]]></title>
+    <link href="http://tumayun.com/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/"/>
+    <updated>2013-01-25T14:07:00+08:00</updated>
+    <id>http://tumayun.com/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu</id>
+    <content type="html"><![CDATA[<p>  &nbsp;&nbsp;最近项目用的 <a href="https://github.com/defunkt/resque," title="Resque Github">Resque</a> 老是会有一些莫名其妙的问题，非常头疼！</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">Mysql</span><span class="o">::</span><span class="ss">Error</span><span class="p">:</span> <span class="no">MySQL</span> <span class="n">server</span> <span class="n">has</span> <span class="n">gone</span> <span class="ss">away</span><span class="p">:</span> <span class="no">SHOW</span> <span class="no">FIELDS</span> <span class="no">FROM</span> <span class="sb">`deals`</span>
@@ -1792,38 +1577,15 @@ n &lt; 1 ? acc : factorial_tco(n-1, n*acc)
 <p>问题就这样解决了！但是，引入一个 <code>Gem</code>，我连文档都没有仔细阅读，匆匆使用了事，现在想想真的很惭愧！
 以后引入 <code>Gem</code> 最起码要将文档通读一边，有能力更应该通读源码！<br/>
 谨记！</p>
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-01-25/resque-zhong-qi-ming-ling/">Resque 重启命令</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-01-25T00:46:00+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>12:46 am</span></time>
-        
-           | <a href="/2013-01-25/resque-zhong-qi-ming-ling/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>  &nbsp;&nbsp;现在 Resque 都应该加上 <a href="http://godrb.com" title="Ruby process monito">god</a> 监控，不然 Resque worker 进程很容易就死掉！
+  <entry>
+    <title type="html"><![CDATA[Resque 重启命令]]></title>
+    <link href="http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling/"/>
+    <updated>2013-01-25T00:46:00+08:00</updated>
+    <id>http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling</id>
+    <content type="html"><![CDATA[<p>  &nbsp;&nbsp;现在 Resque 都应该加上 <a href="http://godrb.com" title="Ruby process monito">god</a> 监控，不然 Resque worker 进程很容易就死掉！
   <a href="http://godrb.com" title="Ruby process monito">god</a> 在 worker 进程挂掉后会自动重启，
   如果项目更新，需要手动重启所有的 worker，可以 kill 掉所有的 worker 进程(千万别 kill -9，最好是 kill -s QUIT，这样会在当前 job 完成后再退出)，
   方法如下：</p>
@@ -1832,115 +1594,21 @@ n &lt; 1 ? acc : factorial_tco(n-1, n*acc)
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">ps</span> <span class="o">-</span><span class="n">e</span> <span class="o">-</span><span class="n">o</span> <span class="n">pid</span><span class="p">,</span><span class="n">command</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">[</span><span class="n">r</span><span class="o">]</span><span class="n">esque</span><span class="o">-[</span><span class="mi">0</span><span class="o">-</span><span class="mi">9</span><span class="o">]</span> <span class="o">|</span> <span class="n">cut</span> <span class="o">-</span><span class="n">d</span> <span class="s1">&#39; &#39;</span> <span class="o">-</span><span class="n">f</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">xargs</span>  <span class="n">kill</span> <span class="o">-</span><span class="n">s</span> <span class="no">QUIT</span>
 </span></code></pre></td></tr></table></div></figure>
 
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/2013-01-25/git-hen-man-de-jie-jue-fang-fa/">Git 很慢的解决方法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2013-01-25T00:32:00+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2013</span></span> <span class='time'>12:32 am</span></time>
-        
-           | <a href="/2013-01-25/git-hen-man-de-jie-jue-fang-fa/#disqus_thread"
-             data-disqus-identifier="http://tumayun.com/2013-01-25/git-hen-man-de-jie-jue-fang-fa/">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>  修改文件<code>/etc/ssh/ssh_config</code>, 添加如下代码：</p>
+  <entry>
+    <title type="html"><![CDATA[Git 很慢的解决方法]]></title>
+    <link href="http://tumayun.com/2013-01-25/git-hen-man-de-jie-jue-fang-fa/"/>
+    <updated>2013-01-25T00:32:00+08:00</updated>
+    <id>http://tumayun.com/2013-01-25/git-hen-man-de-jie-jue-fang-fa</id>
+    <content type="html"><![CDATA[<p>  修改文件<code>/etc/ssh/ssh_config</code>, 添加如下代码：</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="no">GSSAPIAuthentication</span> <span class="n">no</span>
 </span></code></pre></td></tr></table></div></figure>
 
-</div>
+]]></content>
+  </entry>
   
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
-<aside class="sidebar">
-  
-    
-  
-</aside>
-
-    </div>
-  </div>
-  <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - tumayun
-</p>
-
-</footer>
-  
-
-<script type="text/javascript">
-      var disqus_shortname = 'tumayun';
-      
-        
-        var disqus_script = 'count.js';
-      
-    (function () {
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      dsq.src = '//' + disqus_shortname + '.disqus.com/' + disqus_script;
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    }());
-</script>
-
-
-
-
-
-
-<div id="fb-root"></div>
-<script>(function(d, s, id) {
-  var js, fjs = d.getElementsByTagName(s)[0];
-  if (d.getElementById(id)) {return;}
-  js = d.createElement(s); js.id = id; js.async = true;
-  js.src = "//connect.facebook.net/en_US/all.js#appId=212934732101925&xfbml=1";
-  fjs.parentNode.insertBefore(js, fjs);
-}(document, 'script', 'facebook-jssdk'));</script>
-
-
-
-
-
-  <script type="text/javascript">
-    (function(){
-      var twitterWidgets = document.createElement('script');
-      twitterWidgets.type = 'text/javascript';
-      twitterWidgets.async = true;
-      twitterWidgets.src = '//platform.twitter.com/widgets.js';
-      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
-    })();
-  </script>
-
-
-
-
-
-</body>
-</html>
+</feed>

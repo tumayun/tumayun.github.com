@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+  
+  <url>
+    <loc>http://tumayun.com/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/</loc>
+    <lastmod>2013-06-29T19:20:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-06-23/rails-ji-qiao-zhi-safe-name/</loc>
+    <lastmod>2013-06-23T23:51:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-05-29/resque-tong-bu-zhi-xing/</loc>
+    <lastmod>2013-05-29T01:16:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-03-13/let-let-subject-subject-de-qu-bie/</loc>
+    <lastmod>2013-03-13T13:56:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-02-22/ruby-han-shu-shi-bian-cheng-by-arnau-sanchez/</loc>
+    <lastmod>2013-02-22T14:12:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/</loc>
+    <lastmod>2013-01-25T14:07:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-01-25/resque-zhong-qi-ming-ling/</loc>
+    <lastmod>2013-01-25T00:46:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/2013-01-25/git-hen-man-de-jie-jue-fang-fa/</loc>
+    <lastmod>2013-01-25T00:32:00+08:00</lastmod>
+    <priority>0.8</priority>
+  </url>
+  
+  
+  <url>
+    <loc>http://tumayun.com/archives/</loc>
+    <lastmod>2014-08-24T22:23:31+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/blog/</loc>
+    <lastmod>2014-08-24T22:23:31+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/</loc>
+    <lastmod>2014-08-24T22:23:31+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/blog/archives/</loc>
+    <lastmod>2014-08-24T22:23:31+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/about/</loc>
+    <lastmod>2014-08-24T22:23:31+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>http://tumayun.com/search.html</loc>
+    <lastmod>2014-08-24T22:23:31+08:00</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  
+</urlset>

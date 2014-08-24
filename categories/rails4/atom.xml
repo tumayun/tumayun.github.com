@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Rails4 | Tumayun's Blog]]></title>
+  <link href="http://tumayun.com/categories/rails4/atom.xml" rel="self"/>
+  <link href="http://tumayun.com/"/>
+  <updated>2014-08-24T22:23:31+08:00</updated>
+  <id>http://tumayun.com/</id>
+  <author>
+    <name><![CDATA[tumayun]]></name>
+    <email><![CDATA[tumayun.2010@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Rails 4 源码阅读之timestamps]]></title>
+    <link href="http://tumayun.com/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at/"/>
+    <updated>2013-06-29T19:20:00+08:00</updated>
+    <id>http://tumayun.com/2013-06-29/rails-4-yuan-ma-yue-du-zhi-updated-ayu-created-at</id>
+    <content type="html"><![CDATA[<p>最近开始看 Rails 4 的源码,打算写一系列的 Rails 4 源码阅读的文章,这是第一篇.</p>
+
+<p>我是因为想知道 Rails 4 里面的 timestamps 是在什么时候赋值或者更新的,然后我翻看了下 Rails 4 的 ActiveRecord 代码.</p>
+
+<p>在<a href="https://github.com/rails/rails/blob/master/activerecord/lib/active_record/timestamp.rb">https://github.com/rails/rails/blob/master/activerecord/lib/active_record/timestamp.rb</a>里面有<a href="https://github.com/rails/rails/blob/master/activerecord/lib/active_record/timestamp.rb#L46">create_record</a>和<a href="https://github.com/rails/rails/blob/master/activerecord/lib/active_record/timestamp.rb#L60">update_record</a>方法,更新这些<code>timestamps</code>的操作就在这个里面了.</p>
+
+<p>恩,应该是这样.<code>update_record</code>与<code>create_record</code>分别是创建和更新必掉的方法,所以如果有 timestamps 并且开启了<code>record_timestamps</code>就会去赋值或者更新这些字段了.</p>
+
+<p>其实也可以从<code>save</code>开始阅读,<code>save</code>的过程可以简化成这样.</p>
+
+<pre><code class="ruby"># https://github.com/rails/rails/blob/master/activerecord/lib/active_record//connection_adapters/abstract/transaction.rb#L270
+def save(*) #:nodoc:
+  rollback_active_record_state! do
+    with_transaction_returning_status { super }
+  end
+end
+.
+.
+.
+# https://github.com/rails/rails/blob/master/activerecord/lib/active_record/attribute_methods/dirty.rb#L31
+def save(*)
+  if status = super
+    @previously_changed = changes
+    @changed_attributes.clear
+  end
+  status
+end
+.
+.
+.
+# https://github.com/rails/rails/blob/master/activerecord/lib/active_record/validations.rb#L56
+def save(options={})
+  perform_validations(options) ? super : false
+end
+.
+.
+.
+# https://github.com/rails/rails/tree/master/activerecord/lib/activerecord/persistence.rb#L105
+def save(*)
+  create_or_update
+rescue ActiveRecord::RecordInvalid
+  false
+end
+.
+.
+.
+# https://github.com/rails/rails/tree/master/activerecord/lib/activerecord/callbacks.rb#L298
+def create_or_update #:nodoc:
+  run_callbacks(:save) { super }
+end
+.
+.
+.
+# https://github.com/rails/rails/tree/master/activerecord/lib/activerecord/persistence.rb#L464
+def create_or_update
+  raise ReadOnlyRecord if readonly?
+  result = new_record? ? create_record : update_record
+  result != false
+end
+.
+.
+.
+# https://github.com/rails/rails/blob/master/activerecord/lib/active_record/timestamp.rb#L46
+def create_record
+  if self.record_timestamps
+    current_time = current_time_from_proper_timezone
+
+    all_timestamp_attributes.each do |column|
+      if respond_to?(column) &amp;&amp; respond_to?("#{column}=") &amp;&amp; self.send(column).nil?
+        write_attribute(column.to_s, current_time)
+      end
+    end
+  end
+
+  super
+end
+.
+.
+.
+# https://github.com/rails/rails/blob/master/activerecord/lib/active_record/callbacks.rb#L302
+def create_record #:nodoc:
+  run_callbacks(:create) { super }
+end
+.
+.
+.
+# https://github.com/rails/rails/blob/master/activerecord/lib/active_record/persistence.rb#L483
+def create_record(attribute_names = @attributes.keys)
+  attributes_values = arel_attributes_with_values_for_create(attribute_names)
+
+  new_id = self.class.unscoped.insert attributes_values
+  self.id ||= new_id if self.class.primary_key
+
+  @new_record = false
+  id
+end
+</code></pre>
+
+<p>哇,就是这样的顺序,但是感觉有点复杂啊,<code>save</code>到处都是,通过<code>super</code>关键字逐层调用,就像一个<code>rack stack</code>一样!最主要的是我们要知道<code>save</code>的调用链是怎么样的,这个可以看<code>ActiveRecord::Base.ancestors</code>.</p>
+
+<pre><code class="ruby">puts ActiveRecord::Base.ancestors.join("\n")
+ActiveRecord::Base
+ActiveRecord::Core
+ActiveRecord::Store
+ActiveRecord::Serialization
+ActiveModel::Serializers::Xml
+ActiveModel::Serializers::JSON
+ActiveModel::Serialization
+ActiveRecord::Reflection
+ActiveRecord::Transactions
+ActiveRecord::Aggregations
+ActiveRecord::NestedAttributes
+ActiveRecord::AutosaveAssociation
+ActiveModel::SecurePassword
+ActiveRecord::Associations
+ActiveRecord::Timestamp
+ActiveModel::Validations::Callbacks
+ActiveRecord::Callbacks
+ActiveRecord::AttributeMethods::Serialization
+ActiveRecord::AttributeMethods::Dirty
+ActiveModel::Dirty
+ActiveRecord::AttributeMethods::TimeZoneConversion
+ActiveRecord::AttributeMethods::PrimaryKey
+ActiveRecord::AttributeMethods::Query
+ActiveRecord::AttributeMethods::BeforeTypeCast
+ActiveRecord::AttributeMethods::Write
+ActiveRecord::AttributeMethods::Read
+ActiveRecord::AttributeMethods
+ActiveModel::AttributeMethods
+ActiveRecord::Locking::Pessimistic
+ActiveRecord::Locking::Optimistic
+ActiveRecord::CounterCache
+ActiveRecord::Validations
+ActiveModel::Validations::HelperMethods
+ActiveSupport::Callbacks
+ActiveModel::Validations
+ActiveRecord::Integration
+ActiveModel::Conversion
+ActiveRecord::AttributeAssignment
+ActiveModel::ForbiddenAttributesProtection
+ActiveModel::DeprecatedMassAssignmentSecurity
+ActiveRecord::Sanitization
+ActiveRecord::Scoping::Named
+ActiveRecord::Scoping::Default
+ActiveRecord::Scoping
+ActiveRecord::Inheritance
+ActiveRecord::ModelSchema
+ActiveRecord::ReadonlyAttributes
+ActiveRecord::Persistence
+Object
+JSON::Ext::Generator::GeneratorMethods::Object
+ActiveSupport::Dependencies::Loadable
+PP::ObjectMixin
+Kernel
+BasicObject
+</code></pre>
+
+<p>这样就能知道调用链的情况了.当然还可以去<code>debugger</code>.</p>
+
+<p>恩,<code>save</code>就是这样!<code>timestamps</code>又明白了,太棒了~!</p>
+]]></content>
+  </entry>
+  
+</feed>
