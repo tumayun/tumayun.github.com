@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Git | Tumayun's Blog]]></title>
+  <link href="http://tumayun.com/blog/categories/git/atom.xml" rel="self"/>
+  <link href="http://tumayun.com/"/>
+  <updated>2013-06-30T11:37:30+08:00</updated>
+  <id>http://tumayun.com/</id>
+  <author>
+    <name><![CDATA[tumayun]]></name>
+    <email><![CDATA[tumayun.2010@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Git 很慢的解决方法]]></title>
+    <link href="http://tumayun.com/blog/2013-01-25/git-hen-man-de-jie-jue-fang-fa/"/>
+    <updated>2013-01-25T00:32:00+08:00</updated>
+    <id>http://tumayun.com/blog/2013-01-25/git-hen-man-de-jie-jue-fang-fa</id>
+    <content type="html"><![CDATA[<p>  修改文件<code>/etc/ssh/ssh_config</code>, 添加如下代码：
+<code>ruby
+GSSAPIAuthentication no
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>

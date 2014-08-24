@@ -1,0 +1,272 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Rails 技巧之 safe name - Tumayun's Blog</title>
+    <meta name="author" content="tumayun">
+    
+	<meta name="description" content="当使用元编程动态生成代码时,可能会有一些不符合命名规范的名称,那么就可以用到下面的技巧,姑且称之为safe name. 以下出自 Rails 源码 define_method_attribute 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20 &hellip;">
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="Tumayun's Blog" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/favicon.png" rel="shortcut icon">
+    <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+
+    <link href='http://fonts.googleapis.com/css?family=Slackey' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Amethysta' rel='stylesheet' type='text/css'>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+    <script type="text/javascript" src="/javascripts/jquery-tapir.js"></script>
+
+    <!-- remove or comment it to disable ajaxification -->   
+    <script src="/javascripts/ajaxify.js"></script>
+   
+    
+</head>
+
+
+<body>
+    <div id="wrapper">
+    <header id="header" class="inner"><!-- for more effects see _animate.scss -->
+<h1 class="animated bounceInDown">
+    <div id="headerbg">
+        tumayun
+    </div>
+</h1>
+<br>
+
+<ul id="social-links" style="text-align:center">
+  
+  <!-- GitHub -->
+  <li>
+  <a href="https://github.com/tumayun" class="github" title="Github"></a>
+  </li>
+  
+  
+  <!-- Google Plus -->
+  <li>
+  <a href="http://plus.google.com/104692249916246692945" class="googleplus" title="Google Plus"></a>
+  </li>
+  
+  
+  
+  <!-- Twitter -->
+  <li>
+  <a href="http://www.twitter.com/tumayun" class="twitter" title="Twitter"></a>
+  </li>
+  
+  
+  
+  
+  
+</ul>
+
+
+<!-- use full url including 'index.html' for navigation bar if you are using ajax -->
+<ul id="nav">
+	<li id="ajax"><a href="/index.html">Home</a></li>
+	<li id="ajax"><a href="/blog/archives/index.html">Archives</a></li>
+    <li><a href="/atom.xml">RSS</a></li>
+    
+    <li>
+    <div id="dark">
+        <form method="get" action="/search.html" id="search">
+            <input name="query" type="text" style="margin-top:20px;" size="40" placeholder="Search..." x-webkit-speech />
+        </form>
+    </div>
+    </li>
+        
+</ul>
+
+
+
+
+</header>
+
+<div id="toload">
+<!-- begin toload --> 
+    <div id="content" class="inner">
+        <article class="post">
+	<h2 class="title">Rails 技巧之 Safe Name</h2>
+	<div class="entry-content"><p>当使用元编程动态生成代码时,可能会有一些不符合命名规范的名称,那么就可以用到下面的技巧,姑且称之为<code>safe name</code>.</p>
+
+<p>以下出自 Rails 源码 <a href="https://github.com/rails/rails/blob/master/activerecord/lib/active_record/attribute_methods/read.rb#L50">define_method_attribute</a></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="c1"># We want to generate the methods via module_eval rather than</span>
+</span><span class='line'><span class="c1"># define_method, because define_method is slower on dispatch and</span>
+</span><span class='line'><span class="c1"># uses more memory (because it creates a closure).</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># But sometimes the database might return columns with</span>
+</span><span class='line'><span class="c1"># characters that are not allowed in normal method names (like</span>
+</span><span class='line'><span class="c1"># &#39;my_column(omg)&#39;. So to work around this we first define with</span>
+</span><span class='line'><span class="c1"># the __temp__ identifier, and then use alias method to rename</span>
+</span><span class='line'><span class="c1"># it to what we want.</span>
+</span><span class='line'><span class="c1">#</span>
+</span><span class='line'><span class="c1"># We are also defining a constant to hold the frozen string of</span>
+</span><span class='line'><span class="c1"># the attribute name. Using a constant means that we do not have</span>
+</span><span class='line'><span class="c1"># to allocate an object on each call to the attribute method.</span>
+</span><span class='line'><span class="c1"># Making it frozen means that it doesn&#39;t get duped when used to</span>
+</span><span class='line'><span class="c1"># key the @attributes_cache in read_attribute.</span>
+</span><span class='line'><span class="k">def</span> <span class="nf">define_method_attribute</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+</span><span class='line'>  <span class="n">safe_name</span> <span class="o">=</span> <span class="nb">name</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;h*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first</span>
+</span><span class='line'>  <span class="n">generated_attribute_methods</span><span class="o">.</span><span class="n">module_eval</span> <span class="o">&lt;&lt;-</span><span class="no">STR</span><span class="p">,</span> <span class="bp">__FILE__</span><span class="p">,</span> <span class="bp">__LINE__</span> <span class="o">+</span> <span class="mi">1</span>
+</span><span class='line'><span class="sh">  def __temp__#{safe_name}</span>
+</span><span class='line'><span class="sh">  read_attribute(AttrNames::ATTR_#{safe_name}) { |n| missing_attribute(n, caller) }</span>
+</span><span class='line'><span class="sh">  end</span>
+</span><span class='line'><span class="sh">  alias_method #{name.inspect}, :__temp__#{safe_name}</span>
+</span><span class='line'><span class="sh">  undef_method :__temp__#{safe_name}</span>
+</span><span class='line'><span class="no">  STR</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>safe name</code>技巧的原理就是构造符合命名规范的名称(通过一些算法,像unpack,hash都可以),
+  像这里的话是通过<code>unpack('h*')</code>生成一个字串<code>safe_name</code>.</p>
+
+<p>  这个技巧真心很赞!!!</p>
+</div>
+
+<div class="meta">
+	
+		<span class="comments"><a href="/blog/2013-06-23/rails-ji-qiao-zhi-safe-name/#disqus_thread">Comments</a></span>
+	
+</div>
+</article>
+
+	<div class="share">
+	<div class="addthis_toolbox addthis_default_style ">
+	
+	<a class="addthis_button_facebook_like" fb:like:layout="button_count"></a>
+	
+	
+	<a class="addthis_button_tweet"></a>
+	
+	
+	<a class="addthis_counter addthis_pill_style"></a>
+	</div>
+  <script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js#pubid="></script>
+</div>
+
+
+
+<section id="comment">
+    <h2 class="title">Comments</h2>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+</section>
+
+    </div>
+    <footer id="footer">
+    <div style="display:inline">
+    Copyright &copy; 2013
+
+    tumayun
+. Powered by <a href="http://octopress.org">Octopress</a> | 
+    Theme <a href="http://github.com/panks/fabric">fabric</a> by <a href="http://panks.me">Pankaj Kumar</a>
+</div>
+
+
+    </footer>
+    <script src="/javascripts/fabric.js"></script>
+<script src="/javascripts/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+	$('.fancybox').fancybox();
+})(jQuery);
+</script> <!-- Delete or comment this line to disable Fancybox -->
+
+
+<script type="text/javascript">
+      var disqus_shortname = 'tumayun';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://tumayun.com/blog/2013-06-23/rails-ji-qiao-zhi-safe-name/';
+        var disqus_url = 'http://tumayun.com/blog/2013-06-23/rails-ji-qiao-zhi-safe-name/';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-39277551-1']);
+		_gaq.push(['_trackPageview']);
+
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+
+
+
+
+<!-- end toload --> 
+</div>
+</div>
+<script src="/javascripts/jquery.ui.totop.js" type="text/javascript"></script>
+<script type="text/javascript">
+/*<![CDATA[*/
+;(function($){$().UItoTop({easingType:'easeOutCirc'});})(jQuery); 
+/*]]>*/
+</script><!-- remove it to remove the scroll to top button -->
+</body>
+</html>

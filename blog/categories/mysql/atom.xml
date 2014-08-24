@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Mysql | Tumayun's Blog]]></title>
+  <link href="http://tumayun.com/blog/categories/mysql/atom.xml" rel="self"/>
+  <link href="http://tumayun.com/"/>
+  <updated>2013-06-30T11:37:30+08:00</updated>
+  <id>http://tumayun.com/</id>
+  <author>
+    <name><![CDATA[tumayun]]></name>
+    <email><![CDATA[tumayun.2010@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Resque 数据库链接错误]]></title>
+    <link href="http://tumayun.com/blog/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu/"/>
+    <updated>2013-01-25T14:07:00+08:00</updated>
+    <id>http://tumayun.com/blog/2013-01-25/resque-shu-ju-ku-lian-jie-cuo-wu</id>
+    <content type="html"><![CDATA[<p>  &nbsp;&nbsp;最近项目用的 <a href="https://github.com/defunkt/resque," title="Resque Github">Resque</a> 老是会有一些莫名其妙的问题，非常头疼！
+<code>ruby
+Mysql::Error: MySQL server has gone away: SHOW FIELDS FROM `deals`
+</code>
+  实在是没办法了，然后仔细的去阅读了下 <a href="https://github.com/defunkt/resque," title="Resque Github">Resque</a> 的 <a href="https://github.com/defunkt/resque/wiki," title="Resque wiki">wiki</a>，有种恍然大悟的感觉。
+  原来我遇到的问题大家都遇到过，并且给出了解决方案，就拿 Resque 数据库链接错误来说，<a href="https://github.com/defunkt/resque#mysqlerror-mysql-server-has-gone-away," title="Resque Github">Resque</a> 原作者已经有了推荐的解决方案，原文如下：<br/>
+  &nbsp;&nbsp;If your workers remain idle for too long they may lose their MySQL connection.
+  If that happens we recommend using <a href="https://gist.github.com/238999">this Gist</a>.<br/>
+  &nbsp;&nbsp;然后我在项目 <code>config/initializers</code> 目录中的 <code>resque.rb</code> 文件中加入代码：
+<code>ruby
+Resque.after_fork do |job|
+  ActiveRecord::Base.connection_handler.verify_active_connections!
+end
+</code>
+问题就这样解决了！但是，引入一个 <code>Gem</code>，我连文档都没有仔细阅读，匆匆使用了事，现在想想真的很惭愧！
+以后引入 <code>Gem</code> 最起码要将文档通读一边，有能力更应该通读源码！<br/>
+谨记！</p>
+]]></content>
+  </entry>
+  
+</feed>
