@@ -4,7 +4,7 @@
   <title><![CDATA[Tumayun's Blog]]></title>
   <link href="http://tumayun.com/atom.xml" rel="self"/>
   <link href="http://tumayun.com/"/>
-  <updated>2014-08-24T22:26:58+08:00</updated>
+  <updated>2014-09-03T17:14:19+08:00</updated>
   <id>http://tumayun.com/</id>
   <author>
     <name><![CDATA[tumayun]]></name>
@@ -12,6 +12,55 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[日志分割]]></title>
+    <link href="http://tumayun.com/2014-09-03/ri-zhi-fen-ge/"/>
+    <updated>2014-09-03T16:30:42+08:00</updated>
+    <id>http://tumayun.com/2014-09-03/ri-zhi-fen-ge</id>
+    <content type="html"><![CDATA[<p>日志做分割是必须的，不然服务一直跑下去，某一天你会发现磁盘满了！下面就介绍下 logrotate 做日志分割的过程。</p>
+
+<p>首先得安装 logrotate 。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install logrotate</span></code></pre></td></tr></table></div></figure>
+
+
+<p>修改 logrotate 的配置文件。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo vim /etc/logrotate.conf
+</span><span class='line'>
+</span><span class='line'>/home/www/webapp/iconfont/shared/log/*.log {
+</span><span class='line'>  daily         #按天分割
+</span><span class='line'>  rotate 30     #分割的文件最多有 30 份，将删除较早的文件
+</span><span class='line'>  missingok     #如果指定的文件不存在，不报错，继续下一个
+</span><span class='line'>  dateext       #用日期作为分割后的文件后缀
+</span><span class='line'>  compress      #对分割后的日志文件进行压缩
+</span><span class='line'>  delaycompress #不压缩前一个(previous)分割的文件（需要与compress一起用）
+</span><span class='line'>  copytruncate  #清空原有文件，而不是创建一个新文件
+</span><span class='line'>}</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这样的话每天都会自动做日志分割，当然也可以强制执行。</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo -vf logrotate -f /etc/logrotate.conf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>想了解 logrotate 的配置文件该怎么写，可以看 <a href="http://linuxers.org/howto/howto-use-logrotate-manage-log-files">http://linuxers.org/howto/howto-use-logrotate-manage-log-files</a>。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Rails 4 源码阅读之timestamps]]></title>
